@@ -2,8 +2,8 @@
 Exobrain Entity Recognizer
 ==========================
 
-.. image:: https://img.shields.io/travis/kaist-irnlp/exobrain-entity-recognizer.svg
-        :target: https://travis-ci.org/kaist-irnlp/exobrain-entity-recognizer
+.. image:: https://travis-ci.org/kaist-irnlp/exobrain-entity-recognizer.svg?branch=master
+    :target: https://travis-ci.org/kaist-irnlp/exobrain-entity-recognizer
 
 .. image:: https://readthedocs.org/projects/exobrain-entity-recognizer/badge/?version=latest
         :target: https://exobrain-entity-recognizer.readthedocs.io/en/latest/?badge=latest
