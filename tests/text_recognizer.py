@@ -7,8 +7,8 @@ import pytest
 
 from click.testing import CliRunner
 
-from exobrain_entity_recognizer import exobrain_entity_recognizer
-from exobrain_entity_recognizer import cli
+from exobrain_entity import recognizer
+from exobrain_entity import cli
 
 
 @pytest.fixture
