@@ -14,8 +14,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'Click>=6.0',
     'spacy>=2.0,<3.0',
-    'ujson',
-    'click'
+    'ujson'
 ]
 
 setup_requirements = ['pytest-runner', ]
