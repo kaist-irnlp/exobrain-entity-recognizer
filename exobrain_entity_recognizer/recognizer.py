@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class EntityRecognizer:
-    ENT_DICT_PATH = './ents-dict.json'
     WILDCARD = '*'
 
     _dict = None
@@ -95,12 +94,35 @@ class EntityRecognizer:
             self._dict[text] = new_id
             return new_id
 
-    def _init_dict(self):
-        """Init entity dictionary (ent-id pairs)"""
-        if Path(self.ENT_DICT_PATH).is_file():
-            self._dict = json.load(self.ENT_DICT_PATH)
+    def load_dict(self, dict_path):
+        """Load entity dictionary
+
+        Args:
+            dict_path (str): dictionary path
+        """
+        dict_path = Path(dict_path)
+        if dict_path.is_file():
+            try:
+                _dict = json.load(dict_path)
+                self._dict = OrderedDict(_dict)
+            except:
+                raise ValueError('Unable to load dictionary file.')
         else:
-            self._dict = OrderedDict()
+            raise ValueError('Provided dictionary path is invalid.')
+
+    def save_dict(self, dict_path):
+        """Save entity dictionary
+
+        Args:
+            dict_path (str): dictionary path
+        """
+        dict_path = Path(dict_path)
+        with dict_path.open('w', encoding='utf-8') as fout:
+            json.dump(self._dict, fout)
+
+    def _init_dict(self):
+        """Init entity dictionary"""
+        self._dict = OrderedDict()
 
     def _init_nlp(self, model):
         """Init internal NLP module for entity recognition
