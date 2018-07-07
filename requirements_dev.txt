@@ -9,5 +9,5 @@ Sphinx==1.7.5
 twine==1.11.0
 ipython
 
+pytest-runner==4.2
 pytest==3.6.3
-pytest-runner==2.11.1
