@@ -2,6 +2,7 @@
 
 """Main module."""
 import spacy
+from textblob import TextBlob
 import logging
 import ujson as json
 import os
@@ -25,8 +26,7 @@ class EntityRecognizer:
         self._init_dict()
 
     def __call__(self, text):
-        entities = self._get_entities(text)
-        return entities
+        return self._get_entities(text)
 
     def _get_entities(self, text):
         """Recognize and return entities and contexts from text
@@ -44,35 +44,29 @@ class EntityRecognizer:
                 'token_end': end token index of entity,
                 'label': the type of entity (empty if NP-chunk)
             }, ...]
-            list: tokens of text
         """
-        # the recognized entities
-        entities = []
-        # perform recognition
-        doc = self._nlp(text)
-        # 1. named entities
-        entities += [
-            {
+        def _get_entity_dict(ent, doc):
+            return {
                 'id': self._get_text_id(ent.lemma_),
                 'text': ent.text.lower(),
                 'lemma': ent.lemma_,
-                'left_contexts': [tok.text.lower() for tok in ent.lefts],
-                'right_contexts': [tok.text.lower() for tok in ent.rights],
+                'left_contexts': [tok.text.lower() for tok in doc[:ent.start]],
+                'right_contexts': [tok.text.lower() for tok in doc[ent.end:]],
                 'label': ent.label_
-            } for ent in doc.ents]
-        # 2. NP chunks
-        entities += [
-            {
-                'id': self._get_text_id(np.lemma_),
-                'text': np.text.lower(),
-                'lemma': np.lemma_,
-                'left_contexts': [tok.text.lower() for tok in np.lefts],
-                'right_contexts': [tok.text.lower() for tok in np.rights],
-                'label': ""
             }
-            for np in doc.noun_chunks
-            if np not in doc.ents
-        ]
+        # the recognized entities
+        entities = []
+        # recognize NEs & Noun Chunks
+        for sent in TextBlob(text).sentences:
+            doc = self._nlp(sent.string)
+            # 1. named entities
+            entities += [_get_entity_dict(ent, doc) for ent in doc.ents]
+            # # 2. NP chunks
+            entities += [
+                _get_entity_dict(np, doc)
+                for np in list(doc.noun_chunks)
+                if np not in doc.ents
+            ]
         return entities
 
     def _get_text_id(self, text):
@@ -94,7 +88,7 @@ class EntityRecognizer:
             self._dict[text] = new_id
             return new_id
 
-    def load_dict(self, dict_path):
+    def load_dict(self, dict_path='exobrain-ent-dict.json'):
         """Load entity dictionary
 
         Args:
@@ -110,7 +104,7 @@ class EntityRecognizer:
         else:
             raise ValueError('Provided dictionary path is invalid.')
 
-    def save_dict(self, dict_path):
+    def save_dict(self, dict_path='exobrain-ent-dict.json'):
         """Save entity dictionary
 
         Args:
