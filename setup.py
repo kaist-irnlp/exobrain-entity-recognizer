@@ -15,7 +15,7 @@ requirements = [
     'Click>=6.0',
     'spacy>=2.0,<3.0',
     'ujson',
-    'click'
+    'textblob'
 ]
 
 setup_requirements = ['pytest-runner', ]

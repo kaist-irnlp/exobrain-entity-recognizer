@@ -2,6 +2,7 @@
 
 """Main module."""
 import spacy
+from textblob import TextBlob
 import logging
 import ujson as json
 import os
@@ -12,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class EntityRecognizer:
-    ENT_DICT_PATH = './ents-dict.json'
     WILDCARD = '*'
 
     _dict = None
@@ -26,16 +26,15 @@ class EntityRecognizer:
         self._init_dict()
 
     def __call__(self, text):
-        entities, doc = self._get_entities(text)
-        return (entities, [tok.text for tok in doc])
+        return self._get_entities(text)
 
     def _get_entities(self, text):
-        """Recognize and return entities from text
+        """Recognize and return entities and contexts from text
 
         Args:
             text (str): text
         Returns:
-            list: list of recognized entities
+            list: list of recognized entities and contexts
 
             [{
                 'id': ID of entity,
@@ -45,36 +44,30 @@ class EntityRecognizer:
                 'token_end': end token index of entity,
                 'label': the type of entity (empty if NP-chunk)
             }, ...]
-            list: tokens of text
         """
+        def _get_entity_dict(ent, doc):
+            return {
+                'id': self._get_text_id(ent.lemma_),
+                'text': ent.text.lower(),
+                'lemma': ent.lemma_,
+                'left_contexts': [tok.text.lower() for tok in doc[:ent.start]],
+                'right_contexts': [tok.text.lower() for tok in doc[ent.end:]],
+                'label': ent.label_
+            }
         # the recognized entities
         entities = []
-        # perform recognition
-        doc = self._nlp(text)
-        # 1. named entities
-        entities += [
-            {
-                'id': self._get_text_id(ent.lemma_),
-                'text': ent.text,
-                'lemma': ent.lemma_,
-                'token_start': ent.start,
-                'token_end': ent.end,
-                'label': ent.label_,
-            } for ent in doc.ents]
-        # 2. NP chunks
-        entities += [
-            {
-                'id': self._get_text_id(np.lemma_),
-                'text': np.text,
-                'lemma': np.lemma_,
-                'token_start': np.start,
-                'token_end': np.end,
-                'label': ''
-            }
-            for np in doc.noun_chunks
-            if np not in doc.ents
-        ]
-        return entities, doc
+        # recognize NEs & Noun Chunks
+        for sent in TextBlob(text).sentences:
+            doc = self._nlp(sent.string)
+            # 1. named entities
+            entities += [_get_entity_dict(ent, doc) for ent in doc.ents]
+            # # 2. NP chunks
+            entities += [
+                _get_entity_dict(np, doc)
+                for np in list(doc.noun_chunks)
+                if np not in doc.ents
+            ]
+        return entities
 
     def _get_text_id(self, text):
         """Get or add unique ID of given text.
@@ -95,12 +88,35 @@ class EntityRecognizer:
             self._dict[text] = new_id
             return new_id
 
-    def _init_dict(self):
-        """Init entity dictionary (ent-id pairs)"""
-        if Path(self.ENT_DICT_PATH).is_file():
-            self._dict = json.load(self.ENT_DICT_PATH)
+    def load_dict(self, dict_path='exobrain-ent-dict.json'):
+        """Load entity dictionary
+
+        Args:
+            dict_path (str): dictionary path
+        """
+        dict_path = Path(dict_path)
+        if dict_path.is_file():
+            try:
+                _dict = json.load(dict_path)
+                self._dict = OrderedDict(_dict)
+            except:
+                raise ValueError('Unable to load dictionary file.')
         else:
-            self._dict = OrderedDict()
+            raise ValueError('Provided dictionary path is invalid.')
+
+    def save_dict(self, dict_path='exobrain-ent-dict.json'):
+        """Save entity dictionary
+
+        Args:
+            dict_path (str): dictionary path
+        """
+        dict_path = Path(dict_path)
+        with dict_path.open('w', encoding='utf-8') as fout:
+            json.dump(self._dict, fout)
+
+    def _init_dict(self):
+        """Init entity dictionary"""
+        self._dict = OrderedDict()
 
     def _init_nlp(self, model):
         """Init internal NLP module for entity recognition
