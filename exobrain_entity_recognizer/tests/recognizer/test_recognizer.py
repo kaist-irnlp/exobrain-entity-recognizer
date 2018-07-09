@@ -21,7 +21,7 @@ def models():
     call(['python', '-m',  'textblob.download_corpora'])
 
 
-def test_entity_recognizer():
+def test_entity_recognizer(models):
     # run recognizer
     recognizer = EntityRecognizer(SPACY_MODEL)
     text = """
