@@ -4,6 +4,7 @@
 import spacy
 from textblob import TextBlob
 import logging
+from subprocess import call
 import ujson as json
 import os
 from pathlib import Path
@@ -33,41 +34,49 @@ class EntityRecognizer:
 
         Args:
             text (str): text
-        Returns:
-            list: list of recognized entities and contexts
+        Yields:
+            dict: dict of recognized entity and contexts
 
             [{
-                'id': ID of entity,
-                'text': orginal text,
-                'lemma': lemmatized(normalized) text,
+                'ent_id': ID of entity,
+                'ent_text': orginal text,
+                'ent_lemma': lemmatized(normalized) text,
                 'token_start': start token index of entity,
                 'token_end': end token index of entity,
-                'label': the type of entity (empty if NP-chunk)
+                'label': the type of entity ('NP' if noun_chunk)
             }, ...]
         """
         def _get_entity_dict(ent, doc):
             return {
-                'id': self._get_text_id(ent.lemma_),
-                'text': ent.text.lower(),
-                'lemma': ent.lemma_,
-                'left_contexts': [tok.text.lower() for tok in doc[:ent.start]],
-                'right_contexts': [tok.text.lower() for tok in doc[ent.end:]],
+                'ent_id': self._get_text_id(ent.lemma_),
+                'ent_text': ent.text,
+                'ent_lemma': ent.lemma_,
+                'left_contexts': [tok.text for tok in doc[:ent.start]],
+                'right_contexts': [tok.text for tok in doc[ent.end:]],
                 'label': ent.label_
             }
         # the recognized entities
-        entities = []
         # recognize NEs & Noun Chunks
-        for sent in TextBlob(text).sentences:
+        try:
+            sentences = TextBlob(text).sentences
+        except LookupError:  # need dataset download
+            textblob_cmd = 'python -m textblob.download_corpora'
+            logging.error(
+                'The required TextBlob dataset not found. Run \'{}\'.'.format(textblob_cmd))
+        for sent in sentences:
             doc = self._nlp(sent.string)
             # 1. named entities
-            entities += [_get_entity_dict(ent, doc) for ent in doc.ents]
+            named_entities = (_get_entity_dict(ent, doc) for ent in doc.ents)
+            for ent in named_entities:
+                yield ent
             # # 2. NP chunks
-            entities += [
+            noun_chunks = (
                 _get_entity_dict(np, doc)
                 for np in list(doc.noun_chunks)
                 if np not in doc.ents
-            ]
-        return entities
+            )
+            for ent in noun_chunks:
+                yield ent
 
     def _get_text_id(self, text):
         """Get or add unique ID of given text.
@@ -127,9 +136,17 @@ class EntityRecognizer:
             self._nlp = spacy.load(model)
         except OSError:
             spacy_cmd = 'python -m spacy download {}'.format(model)
-            logger.warning(
+            logger.error(
                 'The required spaCy model not found. Run \'{}\'.'.format(spacy_cmd))
 
 
 if __name__ == '__main__':
-    recognizer = EntityRecognizer()
+    recognizer = EntityRecognizer('en')
+    text = """
+        spaCy excels at large-scale information extraction tasks. 
+        It's written from the ground up in carefully memory-managed Cython. 
+        Independent research has confirmed that spaCy is the fastest in the world. 
+        If your application needs to process entire web dumps, spaCy is the library you want to be using.
+    """
+    for ent in recognizer(text):
+        print(ent)
