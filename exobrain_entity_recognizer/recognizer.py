@@ -25,16 +25,16 @@ class EntityRecognizer:
         self._init_dict()
 
     def __call__(self, text):
-        entities, doc = self._get_entities(text)
-        return (entities, [tok.text for tok in doc])
+        entities = self._get_entities(text)
+        return entities
 
     def _get_entities(self, text):
-        """Recognize and return entities from text
+        """Recognize and return entities and contexts from text
 
         Args:
             text (str): text
         Returns:
-            list: list of recognized entities
+            list: list of recognized entities and contexts
 
             [{
                 'id': ID of entity,
@@ -54,26 +54,26 @@ class EntityRecognizer:
         entities += [
             {
                 'id': self._get_text_id(ent.lemma_),
-                'text': ent.text,
+                'text': ent.text.lower(),
                 'lemma': ent.lemma_,
-                'token_start': ent.start,
-                'token_end': ent.end,
-                'label': ent.label_,
+                'left_contexts': [tok.text.lower() for tok in ent.lefts],
+                'right_contexts': [tok.text.lower() for tok in ent.rights],
+                'label': ent.label_
             } for ent in doc.ents]
         # 2. NP chunks
         entities += [
             {
                 'id': self._get_text_id(np.lemma_),
-                'text': np.text,
+                'text': np.text.lower(),
                 'lemma': np.lemma_,
-                'token_start': np.start,
-                'token_end': np.end,
-                'label': ''
+                'left_contexts': [tok.text.lower() for tok in np.lefts],
+                'right_contexts': [tok.text.lower() for tok in np.rights],
+                'label': ""
             }
             for np in doc.noun_chunks
             if np not in doc.ents
         ]
-        return entities, doc
+        return entities
 
     def _get_text_id(self, text):
         """Get or add unique ID of given text.
