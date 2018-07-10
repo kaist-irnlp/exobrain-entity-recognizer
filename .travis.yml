@@ -12,5 +12,5 @@ deploy:
     secure: R4DbHZUIXE7qXV23Q3EAC86p1nCilNSmCTi03aO3qeVJb8aI2WIV0OohRqZhq2zd7Q4uuyFoGi0Smex8kJlRaqaIw2fTzFzzKKt3BL2G3BTMW10NFa47IZwJT1cyWvL7mcMas7iiUd81G5WCnLZl69GSwphsh8u01QK/yMJyfkOMin3U4Ui0vLeFqddhroq13k37U1/uD+EdYA1EIEuTioKA2wgYOGJlFLqWVLUEU6jgPSZdX3U53VEscJaPbyFgg7AAupl/Rz1xb7Aweu77rnbC4TGzu4Z97w4dqao+IUwRpVeGU4xUs7FYuiaGfGHQKWf0AdB7dor5JV+KNgrO2XgFB7NNLIB/pZYGIEkwZsumzFIuG/CnaM4W5M7chxZXkloHi8zS+psxj2GrZgZHDTpRTEtqX9Svyxwy+ILG/QU/SZCUhMveFrBVkbqeLCO+rbMYmDMM09Uw3xj9nLPzCCAcL/9QNij11d+J1R7W3Lg1CjhnpvUrTviybpJJlCWeRy78hieP0SULJCXKvroMzstetnHIyxInnVWbWLyNSDcGWB/lb7jpVpXBw56SpyWp5kYeai/4U1kNgf9KuBCEO4L0X3HyPDk4J3K2wdYaISE/1EXRIr1Vw2CCKPeqkKEo4vuuPn+6ZBhqbV9D4NcsuLm2XFZ7Fqu7X2KS6trDpQQ=
   on:
     tags: true
-    repo: kyoungrok0517/exobrain_entity_recognizer
+    repo: kaist-irnlp / exobrain-entity-recognizer
     python: 3.6
