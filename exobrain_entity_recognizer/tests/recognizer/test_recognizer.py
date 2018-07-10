@@ -15,13 +15,13 @@ import spacy
 SPACY_MODEL = 'en'
 
 
-# @pytest.fixture(scope="module")
-# def models():
-#     call(['python', '-m', 'spacy', 'download', SPACY_MODEL])
-#     call(['python', '-m',  'textblob.download_corpora'])
+@pytest.fixture(scope="module")
+def models():
+    call(['python', '-m', 'spacy', 'download', SPACY_MODEL])
+    call(['python', '-m',  'textblob.download_corpora'])
 
 
-def test_entity_recognizer():
+def test_entity_recognizer(models):
     # run recognizer
     recognizer = EntityRecognizer(SPACY_MODEL)
     text = """
