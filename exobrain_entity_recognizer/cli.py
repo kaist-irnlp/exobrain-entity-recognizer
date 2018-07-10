@@ -3,15 +3,27 @@
 """Console script for exobrain_entity_recognizer."""
 import sys
 import click
+import logging
+from subprocess import call
+
+logger = logging.getLogger(__name__)
 
 
-@click.command()
+@click.group()
 def main(args=None):
     """Console script for exobrain_entity_recognizer."""
-    click.echo("Replace this message by putting your code into "
-               "exobrain_entity_recognizer.cli.main")
-    click.echo("See click documentation at http://click.pocoo.org/")
-    return 0
+    pass
+
+
+@main.command()
+def download_models(args=None):
+    # spaCy
+    click.echo('Downloading spaCy models...')
+    call(['python', '-m', 'spacy', 'download', 'en'])
+    call(['python', '-m', 'spacy', 'download', 'en_core_web_lg'])
+    # TextBlob
+    click.echo('Downloading TextBlob models...')
+    call(['python', '-m',  'textblob.download_corpora'])
 
 
 if __name__ == "__main__":

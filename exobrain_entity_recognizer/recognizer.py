@@ -60,7 +60,8 @@ class EntityRecognizer:
         try:
             sentences = TextBlob(text).sentences
         except LookupError:  # need dataset download
-            textblob_cmd = 'python -m textblob.download_corpora'
+            # textblob_cmd = 'python -m textblob.download_corpora'
+            textblob_cmd = 'exobrain_entity_recognizer download_models'
             logging.error(
                 'The required TextBlob dataset not found. Run \'{}\'.'.format(textblob_cmd))
         for sent in sentences:
@@ -135,7 +136,8 @@ class EntityRecognizer:
             logger.info('Loading spaCy model...')
             self._nlp = spacy.load(model)
         except OSError:
-            spacy_cmd = 'python -m spacy download {}'.format(model)
+            # spacy_cmd = 'python -m spacy download {}'.format(model)
+            spacy_cmd = 'exobrain_entity_recognizer download_models'
             logger.error(
                 'The required spaCy model not found. Run \'{}\'.'.format(spacy_cmd))
 
