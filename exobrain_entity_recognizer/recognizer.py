@@ -48,7 +48,7 @@ class EntityRecognizer:
         """
         def _get_entity_dict(ent, doc):
             return {
-                'ent_id': self._get_text_id(ent.lemma_),
+                'ent_id': self._get_text_id(ent.text.lower()),
                 'ent_text': ent.text,
                 'ent_lemma': ent.lemma_,
                 'left_contexts': [tok.text for tok in doc[:ent.start]],
